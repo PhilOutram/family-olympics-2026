@@ -5,6 +5,7 @@
 
 'use strict';
 
+const APP_VERSION = 'v1.1.0';
 const STORE_KEY = 'family-olympics-2026';
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
 
@@ -434,5 +435,6 @@ document.getElementById('resetAllBtn').addEventListener('click', () => {
 /* =========================================================================
    Boot
    ========================================================================= */
+document.getElementById('version').textContent = APP_VERSION;
 rerender();
 updateMuteBtn();
