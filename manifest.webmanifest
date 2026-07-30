@@ -1,0 +1,13 @@
+{
+  "name": "Family Olympics 2026",
+  "short_name": "Olympics",
+  "description": "Scoreboard for our family Olympics - five teams, every event, live medal tally.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050b22",
+  "theme_color": "#0a1a3a",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
