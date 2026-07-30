@@ -30,6 +30,7 @@ const EVENTS = [
   { id: 'petanque',  name: 'Pétanque',       icon: '🎯', type: 'grid', note: 'Everyone plays everyone · up to 7 · 1 pt per win' },
   { id: 'molkky',    name: 'Mölkky',         icon: '🎳', type: 'grid', note: 'Everyone plays everyone · 1 pt per win' },
   { id: 'boules',    name: 'Boules',         icon: '⚪', type: 'grid', note: 'Everyone plays everyone · first to 7 · 1 pt per win' },
+  { id: 'zoggies',   name: 'Zoggies',        icon: '🥽', type: 'grid', note: 'Everyone plays everyone · up to 7 · 1 pt per win' },
 
   // Team-combination matches: winPts to every team on the winning side
   { id: 'volleyball', name: 'Volleyball', icon: '🏐', type: 'combo', winPts: 3,

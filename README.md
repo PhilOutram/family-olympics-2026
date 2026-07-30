@@ -21,7 +21,7 @@ rings, gold gradients, and the anthem on load).
 Every event feeds the medal tally on the home tab.
 
 **Round-robin grids** (everyone plays everyone, **1 pt per win**) — Table Tennis,
-Badminton, Pétanque, Mölkky, Boules. Tap a cell to record that the *row* team beat the
+Badminton, Pétanque, Mölkky, Boules, Zoggies. Tap a cell to record that the *row* team beat the
 *column* team; the mirror cell fills in automatically (winner `1`, loser `0`).
 
 **Team-combination matches** (**3 pts per win** to every team on the winning side) —
