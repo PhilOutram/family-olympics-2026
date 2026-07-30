@@ -37,14 +37,17 @@ h1, h2, h3, .head-font { font-family: 'Oswald', sans-serif; letter-spacing: .5px
 /* ===== Olympic rings ===== */
 .rings { position: relative; display: inline-block; }
 .rings .ring {
-  display: inline-block; border-radius: 50%; border-style: solid; background: transparent;
+  position: absolute; box-sizing: border-box; border-radius: 50%; border-style: solid;
+  background: transparent; width: var(--rs); height: var(--rs); border-width: var(--rb);
 }
-.rings.small { height: 22px; }
-.rings.small .ring { width: 18px; height: 18px; border-width: 3px; margin-left: -6px; vertical-align: middle; }
-.rings.small .ring:first-child { margin-left: 0; }
-.rings.big { height: 90px; margin-bottom: 8px; }
-.rings.big .ring { width: 62px; height: 62px; border-width: 7px; margin-left: -16px; }
-.rings.big .ring:first-child { margin-left: 0; }
+/* Standard 3-over-2 interlocking layout. HTML order: blue, yellow, black, green, red */
+.rings .ring:nth-child(1) { left: 0;                        top: 0; }                       /* blue   top-left   */
+.rings .ring:nth-child(2) { left: calc(var(--rs) * 0.55);   top: calc(var(--rs) * 0.5); }   /* yellow bottom-left */
+.rings .ring:nth-child(3) { left: calc(var(--rs) * 1.10);   top: 0; }                       /* black  top-centre  */
+.rings .ring:nth-child(4) { left: calc(var(--rs) * 1.65);   top: calc(var(--rs) * 0.5); }   /* green  bottom-right */
+.rings .ring:nth-child(5) { left: calc(var(--rs) * 2.20);   top: 0; }                       /* red    top-right   */
+.rings.small { --rs: 17px; --rb: 3px; width: calc(var(--rs) * 3.2); height: calc(var(--rs) * 1.5); vertical-align: middle; }
+.rings.big   { --rs: 50px; --rb: 7px; width: calc(var(--rs) * 3.2); height: calc(var(--rs) * 1.5); margin: 0 auto 16px; }
 .r-blue   { border-color: var(--blue)   !important; }
 .r-yellow { border-color: var(--yellow) !important; }
 .r-black  { border-color: #e9edff !important; }
