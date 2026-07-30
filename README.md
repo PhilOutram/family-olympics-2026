@@ -10,10 +10,10 @@ rings, gold gradients, and the anthem on load).
 
 | Team | Ring | Members |
 |------|--------|-------------------|
-| 1 | Blue | Rick, Cara, Joe |
+| 1 | Blue | Rick, Cara, Jo |
 | 2 | Yellow | Phil, Hal |
-| 3 | Black | Kezzy, Cam |
-| 4 | Green | Clare, Max |
+| 3 | Black | Kezi, Cam |
+| 4 | Green | Claire, Max |
 | 5 | Red | Zoe, Benny |
 
 ## Events & scoring

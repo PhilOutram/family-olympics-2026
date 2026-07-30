@@ -10,10 +10,10 @@ const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
 
 /* ----- Teams (5 = the five Olympic ring colours) ----- */
 const TEAMS = [
-  { id: 1, members: ['Rick', 'Cara', 'Joe'], color: 'var(--blue)',   ring: 'Blue'   },
-  { id: 2, members: ['Phil', 'Hal'],         color: 'var(--yellow)', ring: 'Yellow' },
-  { id: 3, members: ['Kezzy', 'Cam'],        color: 'var(--black)',  ring: 'Black'  },
-  { id: 4, members: ['Clare', 'Max'],        color: 'var(--green)',  ring: 'Green'  },
+  { id: 1, members: ['Rick', 'Cara', 'Jo'], color: 'var(--blue)',   ring: 'Blue'   },
+  { id: 2, members: ['Phil', 'Hal'],        color: 'var(--yellow)', ring: 'Yellow' },
+  { id: 3, members: ['Kezi', 'Cam'],        color: 'var(--black)',  ring: 'Black'  },
+  { id: 4, members: ['Claire', 'Max'],      color: 'var(--green)',  ring: 'Green'  },
   { id: 5, members: ['Zoe', 'Benny'],        color: 'var(--red)',    ring: 'Red'    },
 ];
 const teamById = (id) => TEAMS.find((t) => t.id === id);
