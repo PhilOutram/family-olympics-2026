@@ -32,10 +32,26 @@ Relay, Synchro Pool Jumping, Swimming Relay. Tap each team's finishing position.
 
 ## Notes
 
-- Scores are saved in the browser's `localStorage`, so keep the running tally on **one
-  device** (whichever phone you're using to record).
-- Pure static site — plain HTML/CSS/JS, no build step. Served on GitHub Pages.
+- **Scores are shared and live.** They're stored in **Firebase Realtime Database**, so
+  every phone sees the same scoreboard and updates the instant anyone records a result.
+  `localStorage` is kept only as an offline cache. The footer shows the live sync status.
+- Pure static site — plain HTML/CSS/JS, no build step. Served on GitHub Pages; the
+  Firebase config is a public client config (access is governed by database rules).
 - The football line-ups weren't on the original sheet, so match 1 is a placeholder split.
+
+### Firebase database rules
+
+The DB was started in *test mode*, whose open rules **expire ~30 days** after creation.
+To keep it working, paste these into **Firebase console → Realtime Database → Rules**:
+
+```json
+{
+  "rules": {
+    "olympics2026": { ".read": true, ".write": true },
+    "$other": { ".read": false, ".write": false }
+  }
+}
+```
 
 ## Run locally
 
