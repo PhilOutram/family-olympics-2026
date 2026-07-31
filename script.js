@@ -5,10 +5,11 @@
 
 'use strict';
 
-const APP_VERSION = 'v1.2.0';
+const APP_VERSION = 'v1.2.1';
 const STORE_KEY = 'family-olympics-2026';
 const DB_ROOT = 'olympics2026/events';   // Realtime Database path for all scores
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
+const RESET_CODE = '2026';              // 4-digit code required to wipe the shared board
 
 const firebaseConfig = {
   apiKey: 'AIzaSyB3hrN6-OwwTwf5ItyDQ-ev0aTuyZYL6bw',
@@ -482,11 +483,12 @@ document.getElementById('muteBtn').addEventListener('click', () => {
 });
 
 document.getElementById('resetAllBtn').addEventListener('click', () => {
-  if (confirm('Reset ALL scores for EVERYONE? This clears the shared scoreboard and cannot be undone.')) {
-    state = {}; saveLocal();
-    if (db) db.ref(DB_ROOT).remove().catch(() => {});
-    currentTab = 'home'; rerender();
-  }
+  const entered = prompt('This wipes the shared scoreboard for EVERYONE and cannot be undone.\n\nEnter the 4-digit reset code to continue:');
+  if (entered === null) return;                 // cancelled
+  if (entered.trim() !== RESET_CODE) { alert('Incorrect code - scoreboard not changed.'); return; }
+  state = {}; saveLocal();
+  if (db) db.ref(DB_ROOT).remove().catch(() => {});
+  currentTab = 'home'; rerender();
 });
 
 /* =========================================================================
