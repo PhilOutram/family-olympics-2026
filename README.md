@@ -27,8 +27,11 @@ Badminton, Pétanque, Mölkky, Zoggies. Tap a cell to record that the *row* team
 **Team-combination matches** (**3 pts per win** to every team on the winning side) —
 Volleyball, Ultimate Frisbee, Football. Tap the winning side.
 
-**Ranked events** (finish 1st–5th → **5-4-3-2-1**) — TT Around the World, Obstacle
-Relay, Synchro Pool Jumping, Swimming Relay. Tap each team's finishing position.
+**Ranked events** (finish 1st–5th → **5-4-3-2-1**) — Obstacle Relay, Synchro Pool
+Jumping, Swimming Relay. Tap each team's finishing position.
+
+**TT Around the World** (5 games) — for each game, pick who came **1st** (1 pt) and **2nd**
+(½ pt). Each team's total across the 5 games is **rounded up** before it feeds the tally.
 
 ## Notes
 

@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v1.3.0';
+const APP_VERSION = 'v1.4.0';
 const STORE_KEY = 'family-olympics-2026';
 const DB_ROOT = 'olympics2026/events';   // Realtime Database path for all scores
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
@@ -64,7 +64,8 @@ const EVENTS = [
     matches: [ { a: [1, 2, 3], b: [4, 5] } ] },
 
   // Ranked events: finish 1st..5th -> 5,4,3,2,1
-  { id: 'ttworld',   name: 'TT Around the World',       icon: '🌍', type: 'ranked', note: 'Played ×5 · finishing order scores 5-4-3-2-1' },
+  { id: 'ttworld',   name: 'TT Around the World',       icon: '🌍', type: 'rounds', games: 5, firstPts: 1, secondPts: 0.5,
+    note: '5 games · 1st = 1 pt, 2nd = ½ pt · each team\'s total is rounded up' },
   { id: 'obstacle',  name: 'Obstacle Relay',            icon: '🏃', type: 'ranked', note: '5 for 1st … 1 for last' },
   { id: 'synchro',   name: 'Synchro Pool Jumping',      icon: '🤽', type: 'ranked', note: '5 for 1st … 1 for last' },
   { id: 'swimrelay', name: 'Swimming Relay',            icon: '🏊', type: 'ranked', note: '5 for 1st … 1 for last' },
@@ -158,10 +159,31 @@ function rankedPoints(ev) {
   });
   return pts;
 }
+/* Rounds event (TT Around the World): 5 games, each with a 1st and 2nd.
+   Raw = firstPts per 1st + secondPts per 2nd; the tally total is rounded UP. */
+function roundsRaw(ev) {
+  const res = state[ev.id] || {};       // { gameIndex: { first: id, second: id } }
+  const raw = {};
+  TEAMS.forEach((t) => (raw[t.id] = 0));
+  for (let i = 0; i < ev.games; i++) {
+    const g = res[i];
+    if (!g) continue;
+    if (g.first) raw[g.first] += ev.firstPts;
+    if (g.second) raw[g.second] += ev.secondPts;
+  }
+  return raw;
+}
+function roundsPoints(ev) {
+  const raw = roundsRaw(ev);
+  const pts = {};
+  TEAMS.forEach((t) => (pts[t.id] = Math.ceil(raw[t.id])));   // rounded up in total
+  return pts;
+}
 function eventPoints(ev) {
   if (ev.type === 'grid') return gridPoints(ev);
   if (ev.type === 'combo') return comboPoints(ev);
   if (ev.type === 'ranked') return rankedPoints(ev);
+  if (ev.type === 'rounds') return roundsPoints(ev);
   return {};
 }
 function totals() {
@@ -197,6 +219,11 @@ function gamesPlayed() {
       Object.entries(res).forEach(([tid, pos]) => {
         if (pos >= 1 && pos <= 5) gp[Number(tid)] += 1;
       });
+    } else if (ev.type === 'rounds') {
+      // everyone plays each recorded round
+      for (let i = 0; i < ev.games; i++) {
+        if (res[i] && (res[i].first || res[i].second)) TEAMS.forEach((t) => (gp[t.id] += 1));
+      }
     }
   });
   return gp;
@@ -213,6 +240,10 @@ function totalGamesPlayed() {
       n += ev.matches.filter((m, i) => res[i] === 'a' || res[i] === 'b').length;
     } else if (ev.type === 'ranked') {
       if (Object.values(res).some((pos) => pos >= 1 && pos <= 5)) n += 1;
+    } else if (ev.type === 'rounds') {
+      for (let i = 0; i < ev.games; i++) {
+        if (res[i] && (res[i].first || res[i].second)) n += 1;
+      }
     }
   });
   return n;
@@ -479,6 +510,76 @@ function renderRanked(ev) {
 }
 
 /* =========================================================================
+   ROUNDS event  (TT Around the World: 5 games, pick 1st and 2nd each)
+   ========================================================================= */
+function renderRounds(ev) {
+  const view = document.getElementById('view');
+  const card = el('div', 'card');
+  card.appendChild(el('h2', null, `${ev.icon} ${ev.name}`));
+  card.appendChild(el('p', 'event-note', ev.note));
+
+  if (!state[ev.id]) state[ev.id] = {};
+  const res = state[ev.id];
+
+  // one team-picker row (place = 'first' | 'second')
+  const pickerRow = (i, place, label) => {
+    const line = el('div', 'rounds-line');
+    line.appendChild(el('span', 'rounds-label', label));
+    const btns = el('div', 'pos-btns');
+    TEAMS.forEach((t) => {
+      const chosen = res[i] && res[i][place] === t.id;
+      const b = el('button', 'team-btn' + (chosen ? ' ' + place : ''),
+        `<span class="sw" style="background:${t.color}"></span>T${t.id}`);
+      b.addEventListener('click', () => {
+        if (!res[i]) res[i] = {};
+        if (res[i][place] === t.id) {
+          delete res[i][place];                       // tap selected to clear
+        } else {
+          res[i][place] = t.id;
+          const other = place === 'first' ? 'second' : 'first';
+          if (res[i][other] === t.id) delete res[i][other];   // a team can't be both
+        }
+        if (!res[i].first && !res[i].second) delete res[i];
+        saveEvent(ev.id);
+        rerender();
+      });
+      btns.appendChild(b);
+    });
+    line.appendChild(btns);
+    return line;
+  };
+
+  for (let i = 0; i < ev.games; i++) {
+    const gc = el('div', 'match');
+    gc.appendChild(el('div', 'match-head', `<span class="mno">Game ${i + 1}</span>`));
+    gc.appendChild(pickerRow(i, 'first', `🥇 1st · ${ev.firstPts}`));
+    gc.appendChild(pickerRow(i, 'second', `🥈 2nd · ½`));
+    card.appendChild(gc);
+  }
+
+  // Points this event (raw, and the rounded-up total that counts)
+  const raw = roundsRaw(ev);
+  const pts = roundsPoints(ev);
+  card.appendChild(el('div', 'event-total', '<span class="lbl">Points this event (rounded up)</span>'));
+  const wrap = el('div', 'mini-tally');
+  TEAMS.forEach((t) => {
+    const rawTxt = raw[t.id] % 1 ? ` <span class="raw">(${raw[t.id]})</span>` : '';
+    wrap.appendChild(el('span', 'mt', `${swatch(t.id)} ${teamLabel(t.id)}: ${pts[t.id]}${rawTxt}`));
+  });
+  card.appendChild(wrap);
+
+  card.appendChild(el('p', 'hint',
+    `Pick who came 1st and 2nd in each of the ${ev.games} games. 1st = ${ev.firstPts} pt, 2nd = ½ pt. Tap a selected team to clear it. Each team\'s total is rounded up.`));
+
+  const reset = el('button', 'btn', 'Clear this event');
+  reset.style.marginTop = '4px';
+  reset.addEventListener('click', () => { state[ev.id] = {}; saveEvent(ev.id); rerender(); });
+  card.appendChild(reset);
+
+  view.appendChild(card);
+}
+
+/* =========================================================================
    Tabs + routing
    ========================================================================= */
 let currentTab = 'home';
@@ -507,6 +608,7 @@ function rerender() {
   else if (ev.type === 'grid') renderGrid(ev);
   else if (ev.type === 'combo') renderCombo(ev);
   else if (ev.type === 'ranked') renderRanked(ev);
+  else if (ev.type === 'rounds') renderRounds(ev);
 }
 
 /* =========================================================================

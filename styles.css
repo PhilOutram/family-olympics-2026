@@ -209,6 +209,19 @@ table.rr { border-collapse: collapse; width: 100%; min-width: 340px; }
 .pos-btn.sel[data-p="4"],.pos-btn.sel[data-p="5"]{ background: var(--panel2); color: var(--text); }
 .rank-pts { font-weight: 900; min-width: 46px; text-align: right; }
 
+/* ===== Rounds (TT Around the World) ===== */
+.rounds-line { display: flex; align-items: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
+.rounds-label { font-family:'Oswald',sans-serif; font-size: 13px; color: var(--muted); width: 58px; flex: 0 0 auto; }
+.team-btn {
+  display: inline-flex; align-items: center; gap: 5px; padding: 7px 10px; border-radius: 9px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer;
+  font-family:'Oswald',sans-serif; font-size: 13px;
+}
+.team-btn .sw { width: 9px; height: 9px; border-radius: 3px; }
+.team-btn.first  { border-color: transparent; color: #201400; background: linear-gradient(180deg,#ffe9a8,var(--gold)); }
+.team-btn.second { border-color: transparent; color: #201400; background: linear-gradient(180deg,#eef1f4,var(--silver)); }
+.mini-tally .raw { color: var(--muted); font-weight: 400; }
+
 /* ===== buttons ===== */
 .btn { border: 1px solid var(--line); background: var(--panel); color: var(--text);
   padding: 8px 12px; border-radius: 10px; cursor: pointer; font-family:'Oswald',sans-serif; font-size: 13px; }
