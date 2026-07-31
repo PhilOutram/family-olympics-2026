@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v1.4.1';
+const APP_VERSION = 'v1.5.0';
 const STORE_KEY = 'family-olympics-2026';
 const DB_ROOT = 'olympics2026/events';   // Realtime Database path for all scores
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
@@ -40,6 +40,12 @@ const TEAMS = [
 const teamById = (id) => TEAMS.find((t) => t.id === id);
 const teamLabel = (id) => `Team ${id}`;
 const teamMembers = (id) => teamById(id).members.join(', ');
+const teamInitials = (id) => {
+  const ini = teamById(id).members.map((m) => m[0].toUpperCase());
+  return ini.length > 1 ? `${ini.slice(0, -1).join(', ')} & ${ini[ini.length - 1]}` : ini[0];
+};
+// "Team 1 - R, C & J" for the roomier labels (where there is space to show who's who)
+const teamLabelInitials = (id) => `${teamLabel(id)} - ${teamInitials(id)}`;
 
 /* ----- Events ----- */
 const EVENTS = [
@@ -366,7 +372,7 @@ function renderGrid(ev) {
   TEAMS.forEach((rowT) => {
     const tr = el('tr');
     const rh = el('td', 'rowhead',
-      `<span class="swatch" style="background:${rowT.color}"></span>${teamLabel(rowT.id)}`);
+      `<span class="swatch" style="background:${rowT.color}"></span>${teamLabelInitials(rowT.id)}`);
     tr.appendChild(rh);
 
     TEAMS.forEach((colT) => {
@@ -417,7 +423,7 @@ function renderCombo(ev) {
   const res = state[ev.id];
 
   const sideChips = (teamIds) => teamIds.map((id) =>
-    `<span class="chip"><span class="sw" style="background:${teamById(id).color}"></span>${teamLabel(id)}</span>`).join('');
+    `<span class="chip"><span class="sw" style="background:${teamById(id).color}"></span>${teamLabelInitials(id)}</span>`).join('');
 
   ev.matches.forEach((m, i) => {
     const mc = el('div', 'match');
@@ -513,13 +519,19 @@ function renderRanked(ev) {
 }
 
 /* =========================================================================
-   ROUNDS event  (TT Around the World: 5 games, pick 1st and 2nd each)
+   ROUNDS event  (TT Around the World: pick 1st and 2nd each game)
    ========================================================================= */
 function renderRounds(ev) {
   const view = document.getElementById('view');
   const card = el('div', 'card');
   card.appendChild(el('h2', null, `${ev.icon} ${ev.name}`));
   card.appendChild(el('p', 'event-note', ev.note));
+
+  // Team key - the picker buttons are too small for names, so decode T1-T5 here.
+  const key = el('p', 'team-key');
+  key.innerHTML = TEAMS.map((t) =>
+    `<span class="tk"><span class="sw" style="background:${t.color}"></span>T${t.id} ${teamInitials(t.id)}</span>`).join('');
+  card.appendChild(key);
 
   if (!state[ev.id]) state[ev.id] = {};
   const res = state[ev.id];

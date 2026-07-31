@@ -210,14 +210,21 @@ table.rr { border-collapse: collapse; width: 100%; min-width: 340px; }
 .rank-pts { font-weight: 900; min-width: 46px; text-align: right; }
 
 /* ===== Rounds (TT Around the World) ===== */
-.rounds-line { display: flex; align-items: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
-.rounds-label { font-family:'Oswald',sans-serif; font-size: 13px; color: var(--muted); width: 58px; flex: 0 0 auto; }
+.team-key { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0 0 14px; color: var(--muted); font-size: 12px; }
+.team-key .tk { display: inline-flex; align-items: center; gap: 5px; }
+.team-key .sw { width: 9px; height: 9px; border-radius: 3px; }
+/* Each place gets its own clearly separated row of big, easy-to-hit buttons. */
+.rounds-line { display: flex; align-items: center; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+.rounds-line + .rounds-line { margin-top: 4px; }
+.rounds-label { font-family:'Oswald',sans-serif; font-size: 13px; color: var(--muted); width: 100%; margin-bottom: 2px; }
+.rounds-line .pos-btns { display: flex; gap: 8px; width: 100%; }
 .team-btn {
-  display: inline-flex; align-items: center; gap: 5px; padding: 7px 10px; border-radius: 9px;
-  border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer;
-  font-family:'Oswald',sans-serif; font-size: 13px;
+  flex: 1 1 0; min-height: 46px; display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 8px 6px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--text); cursor: pointer;
+  font-family:'Oswald',sans-serif; font-size: 15px;
 }
-.team-btn .sw { width: 9px; height: 9px; border-radius: 3px; }
+.team-btn .sw { width: 10px; height: 10px; border-radius: 3px; }
 .team-btn.first  { border-color: transparent; color: #201400; background: linear-gradient(180deg,#ffe9a8,var(--gold)); }
 .team-btn.second { border-color: transparent; color: #201400; background: linear-gradient(180deg,#eef1f4,var(--silver)); }
 .mini-tally .raw { color: var(--muted); font-weight: 400; }
