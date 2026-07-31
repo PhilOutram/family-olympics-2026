@@ -137,7 +137,9 @@ h1, h2, h3, .head-font { font-family: 'Oswald', sans-serif; letter-spacing: .5px
 .lb-swatch { width: 14px; height: 14px; border-radius: 4px; }
 .lb-name b { font-family:'Oswald',sans-serif; font-weight: 600; }
 .lb-members { color: var(--muted); font-size: 12px; }
-.lb-pts { font-weight: 900; font-size: 20px; min-width: 40px; text-align: right; }
+.lb-ptswrap { text-align: right; min-width: 52px; }
+.lb-pts { font-weight: 900; font-size: 20px; line-height: 1.05; }
+.lb-games { color: var(--muted); font-size: 11px; white-space: nowrap; }
 .lb-bar-wrap { grid-column: 1 / -1; height: 6px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; margin-top: 2px; }
 .lb-bar { height: 100%; border-radius: 4px; }
 

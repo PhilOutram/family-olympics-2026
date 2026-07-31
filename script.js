@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v1.2.1';
+const APP_VERSION = 'v1.3.0';
 const STORE_KEY = 'family-olympics-2026';
 const DB_ROOT = 'olympics2026/events';   // Realtime Database path for all scores
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
@@ -50,7 +50,6 @@ const EVENTS = [
   { id: 'badminton', name: 'Badminton',      icon: '🏸', type: 'grid', note: 'Everyone plays everyone · up to 21 · 1 pt per win' },
   { id: 'petanque',  name: 'Pétanque',       icon: '🎯', type: 'grid', note: 'Everyone plays everyone · up to 7 · 1 pt per win' },
   { id: 'molkky',    name: 'Mölkky',         icon: '🎳', type: 'grid', note: 'Everyone plays everyone · 1 pt per win' },
-  { id: 'boules',    name: 'Boules',         icon: '⚪', type: 'grid', note: 'Everyone plays everyone · first to 7 · 1 pt per win' },
   { id: 'zoggies',   name: 'Zoggies',        icon: '🥽', type: 'grid', note: 'Everyone plays everyone · up to 7 · 1 pt per win' },
 
   // Team-combination matches: winPts to every team on the winning side
@@ -176,6 +175,49 @@ function totals() {
   return tot;
 }
 
+/* Games played so far, per team (only counts games with a recorded result). */
+function gamesPlayed() {
+  const gp = {};
+  TEAMS.forEach((t) => (gp[t.id] = 0));
+  EVENTS.forEach((ev) => {
+    const res = state[ev.id] || {};
+    if (ev.type === 'grid') {
+      // each decided pairing = one game for both teams in it
+      Object.keys(res).forEach((key) => {
+        if (!res[key]) return;
+        key.split('-').forEach((id) => (gp[Number(id)] += 1));
+      });
+    } else if (ev.type === 'combo') {
+      ev.matches.forEach((m, i) => {
+        if (res[i] !== 'a' && res[i] !== 'b') return;
+        m.a.concat(m.b).forEach((tid) => (gp[tid] += 1));
+      });
+    } else if (ev.type === 'ranked') {
+      // a ranked event counts as one game for any team that has a placement
+      Object.entries(res).forEach(([tid, pos]) => {
+        if (pos >= 1 && pos <= 5) gp[Number(tid)] += 1;
+      });
+    }
+  });
+  return gp;
+}
+
+/* Total distinct games recorded across the whole Olympics. */
+function totalGamesPlayed() {
+  let n = 0;
+  EVENTS.forEach((ev) => {
+    const res = state[ev.id] || {};
+    if (ev.type === 'grid') {
+      n += Object.keys(res).filter((k) => res[k]).length;
+    } else if (ev.type === 'combo') {
+      n += ev.matches.filter((m, i) => res[i] === 'a' || res[i] === 'b').length;
+    } else if (ev.type === 'ranked') {
+      if (Object.values(res).some((pos) => pos >= 1 && pos <= 5)) n += 1;
+    }
+  });
+  return n;
+}
+
 /* =========================================================================
    Small render helpers
    ========================================================================= */
@@ -202,13 +244,16 @@ function miniTally(pts) {
 function renderHome() {
   const view = document.getElementById('view');
   const tot = totals();
+  const gp = gamesPlayed();
   const ranked = TEAMS.slice().sort((a, b) => tot[b.id] - tot[a.id]);
   const max = Math.max(1, ...TEAMS.map((t) => tot[t.id]));
 
   // Podium (top 3)
   const podCard = el('div', 'card');
   podCard.appendChild(el('h2', null, '🏅 Medal Tally'));
-  podCard.appendChild(el('p', 'event-note', 'Total Olympic points across every event.'));
+  const totalGames = totalGamesPlayed();
+  podCard.appendChild(el('p', 'event-note',
+    `Total Olympic points across every event · <b>${totalGames}</b> game${totalGames === 1 ? '' : 's'} played so far.`));
 
   const podium = el('div', 'podium');
   const order = [ranked[1], ranked[0], ranked[2]];       // silver, gold, bronze layout
@@ -234,7 +279,8 @@ function renderHome() {
       `<div class="lb-rank">${i + 1}</div>` +
       `<div class="lb-swatch" style="background:${t.color}"></div>` +
       `<div class="lb-name"><b>${teamLabel(t.id)}</b><div class="lb-members">${teamMembers(t.id)}</div></div>` +
-      `<div class="lb-pts">${tot[t.id]}</div>` +
+      `<div class="lb-ptswrap"><div class="lb-pts">${tot[t.id]}</div>` +
+        `<div class="lb-games">${gp[t.id]} played</div></div>` +
       `<div class="lb-bar-wrap"><div class="lb-bar" style="width:${(tot[t.id] / max) * 100}%;background:${t.color}"></div></div>`;
     podCard.appendChild(row);
   });
