@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v1.5.0';
+const APP_VERSION = 'v1.6.0';
 const STORE_KEY = 'family-olympics-2026';
 const DB_ROOT = 'olympics2026/events';   // Realtime Database path for all scores
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
@@ -73,7 +73,7 @@ const EVENTS = [
   { id: 'ttworld',   name: 'TT Around the World',       icon: '🌍', type: 'rounds', games: 3, firstPts: 1, secondPts: 0.5,
     note: '3 games · 1st = 1 pt, 2nd = ½ pt · each team\'s total is rounded up' },
   { id: 'obstacle',  name: 'Obstacle Relay',            icon: '🏃', type: 'ranked', note: '5 for 1st … 1 for last' },
-  { id: 'synchro',   name: 'Synchro Pool Jumping',      icon: '🤽', type: 'ranked', note: '5 for 1st … 1 for last' },
+  { id: 'synchro',   name: 'Synchro Pool Jumping',      icon: '🤽', type: 'ranked', points: [3, 2, 1, 0, 0], note: '1st = 3, 2nd = 2, 3rd = 1, 4th & 5th = 0' },
   { id: 'swimrelay', name: 'Swimming Relay',            icon: '🏊', type: 'ranked', note: '5 for 1st … 1 for last' },
 ];
 
@@ -158,10 +158,11 @@ function comboPoints(ev) {
 }
 function rankedPoints(ev) {
   const res = state[ev.id] || {};       // { teamId: position(1..5) }
+  const scale = ev.points || RANK_POINTS;   // events may override the default 5-4-3-2-1
   const pts = {};
   TEAMS.forEach((t) => (pts[t.id] = 0));
   Object.entries(res).forEach(([tid, pos]) => {
-    if (pos >= 1 && pos <= 5) pts[tid] = RANK_POINTS[pos - 1];
+    if (pos >= 1 && pos <= 5) pts[tid] = scale[pos - 1];
   });
   return pts;
 }
@@ -474,13 +475,14 @@ function renderRanked(ev) {
 
   if (!state[ev.id]) state[ev.id] = {};
   const res = state[ev.id];   // teamId -> position
+  const scale = ev.points || RANK_POINTS;
 
   card.appendChild(el('p', 'section-title', 'Tap each team\'s finishing position'));
 
   TEAMS.forEach((t) => {
     const row = el('div', 'rank-row');
     const pos = res[t.id];
-    const pts = pos ? RANK_POINTS[pos - 1] : 0;
+    const pts = pos ? scale[pos - 1] : 0;
     row.innerHTML =
       `<span class="sw" style="background:${t.color}"></span>` +
       `<div><div class="rn">${teamLabel(t.id)}</div><div class="rmem">${teamMembers(t.id)}</div></div>`;
@@ -503,12 +505,15 @@ function renderRanked(ev) {
       btns.appendChild(b);
     });
     right.appendChild(btns);
-    right.appendChild(el('div', 'rank-pts', pts ? '+' + pts : '–'));
+    // placed teams show their points (incl. "0"); unplaced show a dash
+    right.appendChild(el('div', 'rank-pts', pos ? (pts ? '+' + pts : '0') : '–'));
     row.appendChild(right);
     card.appendChild(row);
   });
 
-  card.appendChild(el('p', 'hint', '1st = 5 pts, 2nd = 4, 3rd = 3, 4th = 2, 5th = 1. Tap a selected number to clear it.'));
+  const ordinals = ['1st', '2nd', '3rd', '4th', '5th'];
+  const scaleText = scale.map((v, i) => `${ordinals[i]} = ${v}`).join(', ');
+  card.appendChild(el('p', 'hint', `${scaleText}. Tap a selected number to clear it.`));
 
   const reset = el('button', 'btn', 'Clear this event');
   reset.style.marginTop = '4px';
