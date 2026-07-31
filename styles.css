@@ -222,3 +222,6 @@ table.rr { border-collapse: collapse; width: 100%; min-width: 340px; }
 /* ===== footer ===== */
 .foot { max-width: var(--maxw); margin: 0 auto; padding: 10px 14px 30px; display:flex; justify-content: space-between; align-items:center; color: var(--muted); font-size: 12px; }
 .version { color: var(--gold); font-family: 'Oswald', sans-serif; letter-spacing: .5px; }
+.sync { font-weight: 700; }
+.sync.live { color: #58d68d; }
+.sync.off { color: var(--muted); }

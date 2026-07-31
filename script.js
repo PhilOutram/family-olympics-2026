@@ -5,9 +5,20 @@
 
 'use strict';
 
-const APP_VERSION = 'v1.1.0';
+const APP_VERSION = 'v1.2.0';
 const STORE_KEY = 'family-olympics-2026';
+const DB_ROOT = 'olympics2026/events';   // Realtime Database path for all scores
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyB3hrN6-OwwTwf5ItyDQ-ev0aTuyZYL6bw',
+  authDomain: 'family-olympics-80223.firebaseapp.com',
+  databaseURL: 'https://family-olympics-80223-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'family-olympics-80223',
+  storageBucket: 'family-olympics-80223.firebasestorage.app',
+  messagingSenderId: '531475781359',
+  appId: '1:531475781359:web:f1f75cac74f0d44c37ed1a',
+};
 
 /* ----- Teams (5 = the five Olympic ring colours) ----- */
 const TEAMS = [
@@ -52,14 +63,58 @@ const EVENTS = [
 ];
 
 /* =========================================================================
-   State
+   State  -  live-shared via Firebase, cached in localStorage for offline
    ========================================================================= */
-function loadState() {
+function loadLocal() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
   catch (e) { return {}; }
 }
-function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-let state = loadState();
+function saveLocal() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+}
+let state = loadLocal();   // instant first paint from cache; Firebase overwrites when it connects
+
+let db = null;
+let applyingRemote = false;   // guard so remote snapshots don't echo back as writes
+
+function initSync() {
+  try {
+    if (typeof firebase === 'undefined') { setSyncStatus('nolib'); return; }
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+
+    // Everyone's live scores stream in here.
+    db.ref(DB_ROOT).on('value', (snap) => {
+      applyingRemote = true;
+      state = snap.val() || {};
+      saveLocal();
+      rerender();
+      applyingRemote = false;
+    });
+
+    // Connection indicator in the footer.
+    db.ref('.info/connected').on('value', (s) => setSyncStatus(s.val() ? 'live' : 'off'));
+  } catch (e) {
+    db = null;
+    setSyncStatus('off');
+  }
+}
+
+/* Persist one event's scores to Firebase (per-event = no clobbering between events). */
+function saveEvent(evId) {
+  saveLocal();
+  if (applyingRemote || !db) return;
+  const val = state[evId];
+  db.ref(DB_ROOT + '/' + evId).set(val && Object.keys(val).length ? val : null).catch(() => {});
+}
+
+function setSyncStatus(status) {
+  const n = document.getElementById('sync');
+  if (!n) return;
+  if (status === 'live') { n.textContent = '● Live · shared'; n.className = 'sync live'; }
+  else if (status === 'nolib') { n.textContent = '○ Offline (this device)'; n.className = 'sync off'; }
+  else { n.textContent = '○ Offline · will sync'; n.className = 'sync off'; }
+}
 
 /* pair key helpers for grid events */
 const pairKey = (x, y) => (x < y ? `${x}-${y}` : `${y}-${x}`);
@@ -237,7 +292,7 @@ function renderGrid(ev) {
         // tap = "this row team won"; tap again clears
         if (res[key] === rowT.id) delete res[key];
         else res[key] = rowT.id;
-        saveState();
+        saveEvent(ev.id);
         rerender();
       });
       tr.appendChild(td);
@@ -254,7 +309,7 @@ function renderGrid(ev) {
 
   const reset = el('button', 'btn', 'Clear this event');
   reset.style.marginTop = '10px';
-  reset.addEventListener('click', () => { state[ev.id] = {}; saveState(); rerender(); });
+  reset.addEventListener('click', () => { state[ev.id] = {}; saveEvent(ev.id); rerender(); });
   card.appendChild(reset);
 
   view.appendChild(card);
@@ -287,7 +342,7 @@ function renderCombo(ev) {
     const sideA = el('div', 'side' + (winner === 'a' ? ' win' : ''));
     sideA.innerHTML = `<div class="side-label">Side A</div>${sideChips(m.a)}<div class="win-badge">✓ Winner · +${ev.winPts}</div>`;
     sideA.addEventListener('click', () => {
-      res[i] = (res[i] === 'a') ? null : 'a'; saveState(); rerender();
+      res[i] = (res[i] === 'a') ? null : 'a'; saveEvent(ev.id); rerender();
     });
 
     const vs = el('div', 'vs', 'vs');
@@ -295,7 +350,7 @@ function renderCombo(ev) {
     const sideB = el('div', 'side' + (winner === 'b' ? ' win' : ''));
     sideB.innerHTML = `<div class="side-label">Side B</div>${sideChips(m.b)}<div class="win-badge">✓ Winner · +${ev.winPts}</div>`;
     sideB.addEventListener('click', () => {
-      res[i] = (res[i] === 'b') ? null : 'b'; saveState(); rerender();
+      res[i] = (res[i] === 'b') ? null : 'b'; saveEvent(ev.id); rerender();
     });
 
     sides.appendChild(sideA); sides.appendChild(vs); sides.appendChild(sideB);
@@ -348,7 +403,7 @@ function renderRanked(ev) {
         // clear this position from any other team (positions are unique)
         Object.keys(res).forEach((k) => { if (res[k] === p) delete res[k]; });
         if (res[t.id] === p) delete res[t.id]; else res[t.id] = p;
-        saveState(); rerender();
+        saveEvent(ev.id); rerender();
       });
       btns.appendChild(b);
     });
@@ -362,7 +417,7 @@ function renderRanked(ev) {
 
   const reset = el('button', 'btn', 'Clear this event');
   reset.style.marginTop = '4px';
-  reset.addEventListener('click', () => { state[ev.id] = {}; saveState(); rerender(); });
+  reset.addEventListener('click', () => { state[ev.id] = {}; saveEvent(ev.id); rerender(); });
   card.appendChild(reset);
 
   view.appendChild(card);
@@ -427,8 +482,10 @@ document.getElementById('muteBtn').addEventListener('click', () => {
 });
 
 document.getElementById('resetAllBtn').addEventListener('click', () => {
-  if (confirm('Reset ALL scores for every event? This cannot be undone.')) {
-    state = {}; saveState(); currentTab = 'home'; rerender();
+  if (confirm('Reset ALL scores for EVERYONE? This clears the shared scoreboard and cannot be undone.')) {
+    state = {}; saveLocal();
+    if (db) db.ref(DB_ROOT).remove().catch(() => {});
+    currentTab = 'home'; rerender();
   }
 });
 
@@ -438,3 +495,4 @@ document.getElementById('resetAllBtn').addEventListener('click', () => {
 document.getElementById('version').textContent = APP_VERSION;
 rerender();
 updateMuteBtn();
+initSync();

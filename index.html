@@ -49,10 +49,12 @@
   <main id="view" class="view"></main>
 
   <footer class="foot">
-    <span>Scores are saved on this device. · <span id="version" class="version"></span></span>
+    <span><span id="sync" class="sync">○ Connecting…</span> · <span id="version" class="version"></span></span>
     <button id="resetAllBtn" class="link-btn">Reset everything</button>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
