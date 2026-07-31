@@ -11,6 +11,14 @@ const DB_ROOT = 'olympics2026/events';   // Realtime Database path for all score
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
 const RESET_CODE = '2026';              // 4-digit code required to wipe the shared board
 
+/*
+ * Firebase web config. This is a PUBLIC client identifier, not a secret - Google
+ * designs it to ship in browser code, and it must be here for the app to work. It
+ * grants no access on its own; who can read/write is controlled by the Realtime
+ * Database Security Rules, not by keeping this key hidden. Rotating or hiding it
+ * achieves nothing (any replacement is equally public). GitHub's secret scanner
+ * flags the generic "AIza..." Google key shape, so this is a known false positive.
+ */
 const firebaseConfig = {
   apiKey: 'AIzaSyB3hrN6-OwwTwf5ItyDQ-ev0aTuyZYL6bw',
   authDomain: 'family-olympics-80223.firebaseapp.com',
