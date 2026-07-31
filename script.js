@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v1.4.0';
+const APP_VERSION = 'v1.4.1';
 const STORE_KEY = 'family-olympics-2026';
 const DB_ROOT = 'olympics2026/events';   // Realtime Database path for all scores
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
@@ -64,8 +64,8 @@ const EVENTS = [
     matches: [ { a: [1, 2, 3], b: [4, 5] } ] },
 
   // Ranked events: finish 1st..5th -> 5,4,3,2,1
-  { id: 'ttworld',   name: 'TT Around the World',       icon: '🌍', type: 'rounds', games: 5, firstPts: 1, secondPts: 0.5,
-    note: '5 games · 1st = 1 pt, 2nd = ½ pt · each team\'s total is rounded up' },
+  { id: 'ttworld',   name: 'TT Around the World',       icon: '🌍', type: 'rounds', games: 3, firstPts: 1, secondPts: 0.5,
+    note: '3 games · 1st = 1 pt, 2nd = ½ pt · each team\'s total is rounded up' },
   { id: 'obstacle',  name: 'Obstacle Relay',            icon: '🏃', type: 'ranked', note: '5 for 1st … 1 for last' },
   { id: 'synchro',   name: 'Synchro Pool Jumping',      icon: '🤽', type: 'ranked', note: '5 for 1st … 1 for last' },
   { id: 'swimrelay', name: 'Swimming Relay',            icon: '🏊', type: 'ranked', note: '5 for 1st … 1 for last' },
@@ -220,9 +220,12 @@ function gamesPlayed() {
         if (pos >= 1 && pos <= 5) gp[Number(tid)] += 1;
       });
     } else if (ev.type === 'rounds') {
-      // everyone plays each recorded round
+      // a round counts only for the teams that placed (1st / 2nd), like the grids
       for (let i = 0; i < ev.games; i++) {
-        if (res[i] && (res[i].first || res[i].second)) TEAMS.forEach((t) => (gp[t.id] += 1));
+        const g = res[i];
+        if (!g) continue;
+        if (g.first) gp[g.first] += 1;
+        if (g.second) gp[g.second] += 1;
       }
     }
   });
