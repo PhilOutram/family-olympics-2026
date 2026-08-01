@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v1.6.0';
+const APP_VERSION = 'v1.6.1';
 const STORE_KEY = 'family-olympics-2026';
 const DB_ROOT = 'olympics2026/events';   // Realtime Database path for all scores
 const RANK_POINTS = [5, 4, 3, 2, 1];   // 1st..5th
@@ -227,12 +227,9 @@ function gamesPlayed() {
         if (pos >= 1 && pos <= 5) gp[Number(tid)] += 1;
       });
     } else if (ev.type === 'rounds') {
-      // a round counts only for the teams that placed (1st / 2nd), like the grids
+      // everyone plays every recorded round of around-the-world (not just the placers)
       for (let i = 0; i < ev.games; i++) {
-        const g = res[i];
-        if (!g) continue;
-        if (g.first) gp[g.first] += 1;
-        if (g.second) gp[g.second] += 1;
+        if (res[i] && (res[i].first || res[i].second)) TEAMS.forEach((t) => (gp[t.id] += 1));
       }
     }
   });
